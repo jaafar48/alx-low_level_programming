@@ -1,37 +1,47 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "main.h"
+#include <unistd.h>
+
 /**
- * main- Entry point
-(* a blank line
- *@argc: the number of parameters.
- *@argv: the parameeters in the case the number ob bytes.
-* Description: this program prints opcodes in hexa)?
-* Return: 0 in succes
-*/
+ * main - displays the information contained in the ELF header
+ * @argc: number of arguments passed to the program
+ * @argv: array of arguments
+ * Return: Always 0 (Success)
+ */
+
 int main(int argc, char *argv[])
 {
-	int i, n;
-
+	int fd;
+	ssize_t sz;
+	char buf[5];
+	char elf[1];
 
 	if (argc != 2)
 	{
-		printf("Error\n");
-		return (1);
+		dprintf(STDERR_FILENO, "Usage: cp file\n");
+		exit(97);
 	}
-	n = atoi(argv[1]);
-	if (n < 0)
+	fd = open(argv[1], O_RDWR);
+	if (fd == -1)
 	{
-		printf("Error\n");
-		exit(2);
+		dprintf(STDERR_FILENO, "Error: Can't open from file %s\n", argv[1]);
+		exit(98);
 	}
+	sz = read(fd, buf, 4);
+	if (sz == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		exit(98);
+	}
+	sz = lseek(fd, 1, SEEK_SET);
+	sz = read(fd, elf, 1);
+	if (elf[0] != 'E')
+		exit(98);
 
-	for (i = 0; i < n; i++)
-	{
-		printf("%02hhx", *((char *)main + i));
-		if (i < n - 1)
-			printf(" ");
-		else
-			printf("\n");
-	}
+	close(fd);
 	return (0);
 }
